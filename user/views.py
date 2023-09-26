@@ -6,7 +6,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from user.models import Post
-from user.permissions import ReadOnly
+from user.permissions import ReadOnly, IsCreatorOrReadOnly, IsCreatorOrIsAdmin
 from user.serializers import (
     UserSerializer,
     UserListSerializer,
@@ -89,13 +89,13 @@ class PostViewSet(viewsets.ModelViewSet):
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
 
-    # def get_permissions(self):
-    #     if self.action == "create":
-    #         return [IsAuthenticated()]
-    #     if self.action in ("update", "partial_update", "destroy"):
-    #         return [IsCreatorOrReadOnly()]
-    #
-    #     return super().get_permissions()
+    def get_permissions(self):
+        if self.action in ("update", "partial_update"):
+            return [IsCreatorOrReadOnly()]
+        if self.action == "destroy":
+            return [IsCreatorOrIsAdmin()]
+
+        return super().get_permissions()
 
     # def get_queryset(self):
     #     queryset = self.queryset
