@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     "rest_framework",
     'rest_framework_simplejwt',
     "rest_framework_simplejwt.token_blacklist",
+    "drf_spectacular",
     "user",
 ]
 
@@ -149,10 +150,18 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(days=7),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
     "ROTATE_REFRESH_TOKENS": True,
+}
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'Social Media API',
+    'DESCRIPTION': 'Documentation for Social Media API',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': False,
 }
