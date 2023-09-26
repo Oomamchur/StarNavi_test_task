@@ -1,10 +1,11 @@
 from django.contrib.auth import get_user_model
 from rest_framework import generics, status, viewsets
-from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from user.permissions import ReadOnly
 from user.serializers import UserSerializer, UserListSerializer, UserDetailSerializer
 
 
@@ -37,7 +38,7 @@ class LogoutView(APIView):
 class UserViewSet(viewsets.ModelViewSet):
     queryset = get_user_model().objects.all()
     serializer_class = UserSerializer
-    permission_classes = (IsAuthenticatedOrReadOnly,)
+    permission_classes = (ReadOnly,)
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -46,6 +47,12 @@ class UserViewSet(viewsets.ModelViewSet):
             return UserDetailSerializer
 
         return UserSerializer
+
+    def get_permissions(self):
+        if self.action == "destroy":
+            return [IsAdminUser()]
+
+        return super().get_permissions()
 
     def get_queryset(self) -> queryset:
         queryset = super().get_queryset()
