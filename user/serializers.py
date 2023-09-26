@@ -74,7 +74,7 @@ class PostListSerializer(PostSerializer):
             "id",
             "user_username",
             "text",
-            # "media_image",
+            "media_image",
             "created_at",
         )
 
@@ -86,7 +86,7 @@ class PostDetailSerializer(PostListSerializer):
             "id",
             "user_username",
             "text",
-            # "media_image",
+            "media_image",
             # "likes_count",
             # "unlikes_count",
         )
