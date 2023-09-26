@@ -37,5 +37,24 @@ class Post(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     media_image = models.ImageField(null=True, upload_to=post_image_file_path)
 
+    @property
+    def likes_count(self):
+        return self.likes.count()
+
+    class Meta:
+        ordering = ["-created_at"]
+
+
+class Like(models.Model):
+    post = models.ForeignKey(
+        Post, related_name="likes", on_delete=models.CASCADE
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name="likes",
+        on_delete=models.CASCADE,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
     class Meta:
         ordering = ["-created_at"]

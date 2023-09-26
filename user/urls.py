@@ -10,12 +10,13 @@ from user.views import (
     ManageUserView,
     LogoutView,
     UserViewSet,
-    PostViewSet,
+    PostViewSet, LikeList,
 )
 
 router = routers.DefaultRouter()
 router.register("users", UserViewSet)
 router.register("posts", PostViewSet)
+
 
 urlpatterns = [
     path("register/", CreateUserView.as_view(), name="create"),
@@ -24,6 +25,7 @@ urlpatterns = [
     path("logout/", LogoutView.as_view(), name="logout"),
     path("profile/", ManageUserView.as_view(), name="manage"),
     path("", include(router.urls)),
+    path("likes/", LikeList.as_view(), name="like"),
 ]
 
 app_name = "user"

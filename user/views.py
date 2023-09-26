@@ -1,17 +1,27 @@
+from datetime import datetime
+
 from django.contrib.auth import get_user_model
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import generics, status, viewsets
-from rest_framework.permissions import IsAuthenticated, IsAdminUser, IsAuthenticatedOrReadOnly
+from rest_framework.decorators import action
+from rest_framework.permissions import (
+    IsAuthenticated,
+    IsAdminUser,
+    IsAuthenticatedOrReadOnly,
+)
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from user.models import Post
+from user.models import Post, Like
 from user.permissions import ReadOnly, IsCreatorOrReadOnly, IsCreatorOrIsAdmin
 from user.serializers import (
     UserSerializer,
     UserListSerializer,
-    UserDetailSerializer, PostSerializer, PostListSerializer, PostDetailSerializer,
+    UserDetailSerializer,
+    PostSerializer,
+    PostListSerializer,
+    PostDetailSerializer, LikeListSerializer, LikeSerializer,
 )
 
 
@@ -110,6 +120,8 @@ class PostViewSet(viewsets.ModelViewSet):
             return PostListSerializer
         if self.action == "retrieve":
             return PostDetailSerializer
+        if self.action == "like":
+            return LikeSerializer
 
         return PostListSerializer
 
@@ -147,3 +159,62 @@ class PostViewSet(viewsets.ModelViewSet):
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
+
+    @action(
+        methods=["POST"],
+        detail=True,
+        url_path="like",
+        permission_classes=(IsAuthenticated,),
+    )
+    def like(self, request, pk=None):
+        """Endpoint for liking specific post"""
+        post = self.get_object()
+        user = self.request.user
+
+        Like.objects.create(post=post, user=user, created_at=datetime.now())
+
+        return Response(status=status.HTTP_200_OK)
+
+
+class LikeList(generics.ListAPIView):
+    queryset = Like.objects.all()
+    serializer_class = LikeListSerializer
+    permission_classes = (IsAuthenticated,)
+
+    # def get_queryset(self):
+    #     queryset = self.queryset.select_related("post", "user")
+    #         date_from = request.query_params.get("date_from")
+    #         date_to = request.query_params.get("date_to")
+    #
+    #         queryset = Like.objects.all()
+    #
+    #         if date_from:
+    #             queryset = queryset.filter()
+    #
+    #     return queryset
+
+
+# def index(request: HttpRequest) -> HttpResponse:
+#     num_movies = Movie.objects.count()
+#
+#     last_added = Movie.objects.all().order_by("-id")[:3]
+#     num_visits = request.session.get("num_visits", 0)
+#     request.session["num_visits"] = num_visits + 1
+#
+#     context = {
+#         "num_movies": num_movies,
+#         "num_actors": num_actors,
+#         "num_users": num_users,
+#         "num_visits": num_visits + 1,
+#         "last_added": last_added,
+#     }
+#     return render(request, "catalog/index.html", context=context)
+
+# def likes_count_by_date(request):
+#     date_from = request.query_params.get("date_from")
+#     date_to = request.query_params.get("date_to")
+#
+#     queryset = Like.objects.all()
+#
+#     if date_from:
+#         queryset = queryset.filter()
