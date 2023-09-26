@@ -1,4 +1,5 @@
 from django.contrib.auth import get_user_model
+from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import generics, status, viewsets
 from rest_framework.permissions import IsAuthenticated, IsAdminUser, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
@@ -62,6 +63,10 @@ class UserViewSet(viewsets.ModelViewSet):
     def get_queryset(self) -> queryset:
         queryset = super().get_queryset()
 
+        username = self.request.query_params.get("username")
+        if username:
+            queryset = queryset.filter(username__icontains=username)
+
         first_name = self.request.query_params.get("first_name")
         if first_name:
             queryset = queryset.filter(first_name__icontains=first_name)
@@ -71,6 +76,28 @@ class UserViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(last_name__icontains=last_name)
 
         return queryset.distinct()
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="username",
+                description="Filter by username (ex. ?username=user1)",
+                type=str,
+            ),
+            OpenApiParameter(
+                name="first_name",
+                description="Filter by first_name (ex. ?first_name=Brad)",
+                type=str,
+            ),
+            OpenApiParameter(
+                name="last_name",
+                description="Filter by last_name (ex. ?last_name=Pitt)",
+                type=str,
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
 
 class PostViewSet(viewsets.ModelViewSet):
@@ -97,19 +124,26 @@ class PostViewSet(viewsets.ModelViewSet):
 
         return super().get_permissions()
 
-    # def get_queryset(self):
-    #     queryset = self.queryset
-    #
-    #     username = self.request.query_params.get("username")
-    #     if username:
-    #         queryset = queryset.filter(user__username__icontains=username)
-    #
-    #     if self.action in ("list", "retrieve"):
-    #         queryset = queryset.prefetch_related("user")
-    #
-    #     queryset = queryset.filter(
-    #         Q(user=self.request.user)
-    #         | Q(user__in=self.request.user.user_follow.all())
-    #     )
-    #
-    #     return queryset
+    def get_queryset(self):
+        queryset = self.queryset
+
+        username = self.request.query_params.get("username")
+        if username:
+            queryset = queryset.filter(user__username__icontains=username)
+
+        if self.action in ("list", "retrieve"):
+            queryset = queryset.prefetch_related("user")
+
+        return queryset
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="username",
+                description="Filter by username (ex. ?username=user1)",
+                type=str,
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
