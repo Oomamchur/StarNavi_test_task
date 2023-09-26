@@ -20,11 +20,11 @@ class User(AbstractUser):
         return f"{self.first_name} {self.last_name}"
 
 
-# def post_image_file_path(instance, filename) -> str:
-#     _, extension = os.path.splitext(filename)
-#     filename = f"{slugify(instance.user)}-{uuid.uuid4()}{extension}"
-#
-#     return os.path.join("media/uploads/users/posts", filename)
+def post_image_file_path(instance, filename) -> str:
+    _, extension = os.path.splitext(filename)
+    filename = f"{slugify(instance.user)}-{uuid.uuid4()}{extension}"
+
+    return os.path.join("media/uploads/users/posts", filename)
 
 
 class Post(models.Model):
@@ -35,7 +35,7 @@ class Post(models.Model):
         on_delete=models.CASCADE,
     )
     created_at = models.DateTimeField(auto_now_add=True)
-    # media_image = models.ImageField(null=True, upload_to=post_image_file_path)
+    media_image = models.ImageField(null=True, upload_to=post_image_file_path)
 
     class Meta:
         ordering = ["-created_at"]
