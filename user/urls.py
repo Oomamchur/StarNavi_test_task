@@ -11,7 +11,9 @@ from user.views import (
     LogoutView,
     UserViewSet,
     PostViewSet,
-    LikeList, get_likes_count_by_date,
+    LikeList,
+    get_likes_count_by_date,
+    user_activity,
 )
 
 router = routers.DefaultRouter()
@@ -28,6 +30,7 @@ urlpatterns = [
     path("", include(router.urls)),
     path("likes/", LikeList.as_view(), name="like"),
     path("analytics/", get_likes_count_by_date, name="like-analytics"),
+    path("activity/", user_activity, name="user-activity"),
 ]
 
 app_name = "user"

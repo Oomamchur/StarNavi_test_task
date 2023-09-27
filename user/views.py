@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from django.contrib.auth import get_user_model
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import generics, status, viewsets
-from rest_framework.decorators import action, api_view
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import (
     IsAuthenticated,
     IsAdminUser,
@@ -209,6 +209,7 @@ class LikeList(generics.ListAPIView):
 
 
 @api_view(["GET"])
+@permission_classes([IsAuthenticated])
 def get_likes_count_by_date(request: Request) -> Response:
     queryset = Like.objects.all()
     date_from = request.query_params.get("date_from")
@@ -233,3 +234,18 @@ def get_likes_count_by_date(request: Request) -> Response:
     )
 
     return Response(response_message, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def user_activity(request: Request) -> Response:
+    user = request.user
+    last_login = user.last_login
+    last_activity = user.last_activity
+
+    response_dict = {
+        f"{user.username}'s last login": last_login,
+        f"{user.username}'s last request": last_activity,
+    }
+
+    return Response(response_dict, status=status.HTTP_200_OK)
