@@ -3,12 +3,13 @@ from datetime import datetime, timedelta
 from django.contrib.auth import get_user_model
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import generics, status, viewsets
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view
 from rest_framework.permissions import (
     IsAuthenticated,
     IsAdminUser,
     IsAuthenticatedOrReadOnly,
 )
+from rest_framework.request import Request
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -186,51 +187,23 @@ class LikeList(generics.ListAPIView):
     def get_queryset(self):
         queryset = self.queryset.select_related("post", "user")
 
-        date_from = self.request.query_params.get("date_from")
-        date_to = self.request.query_params.get("date_to")
-        if date_from:
-            date_from = datetime.strptime(date_from, "%Y-%m-%d").date()
-            queryset = queryset.filter(created_at__gt=date_from)
-
-        if date_to:
-            date_to = datetime.strptime(
-                date_to, "%Y-%m-%d"
-            ).date() + timedelta(days=1)
-            queryset = queryset.filter(created_at__lte=date_to)
-
         return queryset
 
 
-# def index(request: HttpRequest) -> HttpResponse:
-#     num_movies = Movie.objects.count()
-#
-#     last_added = Movie.objects.all().order_by("-id")[:3]
-#     num_visits = request.session.get("num_visits", 0)
-#     request.session["num_visits"] = num_visits + 1
-#
-#     context = {
-#         "num_movies": num_movies,
-#         "num_actors": num_actors,
-#         "num_users": num_users,
-#         "num_visits": num_visits + 1,
-#         "last_added": last_added,
-#     }
-#     return render(request, "catalog/index.html", context=context)
+@api_view(["GET"])
+def get_likes_count_by_date(request: Request) -> Response:
+    queryset = Like.objects.all()
+    date_from = request.query_params.get("date_from")
+    date_to = request.query_params.get("date_to")
 
-# def likes_count_by_date(request):
-#     queryset = Like.objects.all()
-#     date_from = request.query_params.get("date_from")
-#     date_to = request.query_params.get("date_to")
-#
-#     if date_from:
-#         date_from = datetime.strptime(date_from, "%Y-%m-%d").date()
-#         queryset = queryset.filter(created_at__gt=date_from)
-#
-#     if date_to:
-#         date_to = datetime.strptime(
-#             date_to, "%Y-%m-%d"
-#         ).date() + timedelta(days=1)
-#         queryset = queryset.filter(created_at__lte=date_to)
-#
-#     return Response(queryset.count(), status=200)
+    if date_from:
+        date_from = datetime.strptime(date_from, "%Y-%m-%d").date()
+        queryset = queryset.filter(created_at__gt=date_from)
 
+    if date_to:
+        date_to = datetime.strptime(date_to, "%Y-%m-%d").date() + timedelta(
+            days=1
+        )
+        queryset = queryset.filter(created_at__lte=date_to)
+
+    return Response(queryset.count(), status=status.HTTP_200_OK)
