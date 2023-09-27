@@ -14,7 +14,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from user.models import Post, Like
+from user.models import Post, Like, Dislike
 from user.permissions import ReadOnly, IsCreatorOrReadOnly, IsCreatorOrIsAdmin
 from user.serializers import (
     UserSerializer,
@@ -25,6 +25,7 @@ from user.serializers import (
     PostDetailSerializer,
     LikeListSerializer,
     LikeSerializer,
+    DislikeSerializer,
 )
 
 
@@ -125,6 +126,8 @@ class PostViewSet(viewsets.ModelViewSet):
             return PostDetailSerializer
         if self.action == "like":
             return LikeSerializer
+        if self.action == "dislike":
+            return DislikeSerializer
 
         return PostListSerializer
 
@@ -178,6 +181,21 @@ class PostViewSet(viewsets.ModelViewSet):
 
         return Response(status=status.HTTP_200_OK)
 
+    @action(
+        methods=["POST"],
+        detail=True,
+        url_path="dislike",
+        permission_classes=(IsAuthenticated,),
+    )
+    def dislike(self, request, pk=None):
+        """Endpoint for liking specific post"""
+        post = self.get_object()
+        user = self.request.user
+
+        Dislike.objects.create(post=post, user=user, created_at=datetime.now())
+
+        return Response(status=status.HTTP_200_OK)
+
 
 class LikeList(generics.ListAPIView):
     queryset = Like.objects.all()
@@ -196,14 +214,22 @@ def get_likes_count_by_date(request: Request) -> Response:
     date_from = request.query_params.get("date_from")
     date_to = request.query_params.get("date_to")
 
+    from_str = ""
     if date_from:
+        from_str = f" from {date_from}"
         date_from = datetime.strptime(date_from, "%Y-%m-%d").date()
         queryset = queryset.filter(created_at__gt=date_from)
 
+    to_str = ""
     if date_to:
+        to_str = f" to {date_to}"
         date_to = datetime.strptime(date_to, "%Y-%m-%d").date() + timedelta(
             days=1
         )
         queryset = queryset.filter(created_at__lte=date_to)
 
-    return Response(queryset.count(), status=status.HTTP_200_OK)
+    response_message = (
+        f"Number of likes in period{from_str}{to_str}: {queryset.count()}"
+    )
+
+    return Response(response_message, status=status.HTTP_200_OK)

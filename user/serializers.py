@@ -1,7 +1,7 @@
 from django.contrib.auth import get_user_model
 from rest_framework import serializers
 
-from user.models import Post, Like
+from user.models import Post, Like, Dislike
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -88,7 +88,7 @@ class PostDetailSerializer(PostListSerializer):
             "text",
             "media_image",
             "likes_count",
-            # "unlikes_count",
+            "dislikes_count",
         )
 
 
@@ -105,3 +105,9 @@ class LikeListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Like
         fields = ("id", "username", "post", "created_at")
+
+
+class DislikeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Dislike
+        fields = ("id", "created_at")

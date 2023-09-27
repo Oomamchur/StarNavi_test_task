@@ -41,6 +41,10 @@ class Post(models.Model):
     def likes_count(self):
         return self.likes.count()
 
+    @property
+    def dislikes_count(self):
+        return self.dislikes.count()
+
     class Meta:
         ordering = ["-created_at"]
 
@@ -52,6 +56,21 @@ class Like(models.Model):
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         related_name="likes",
+        on_delete=models.CASCADE,
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+
+class Dislike(models.Model):
+    post = models.ForeignKey(
+        Post, related_name="dislikes", on_delete=models.CASCADE
+    )
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        related_name="dislikes",
         on_delete=models.CASCADE,
     )
     created_at = models.DateTimeField(auto_now_add=True)
