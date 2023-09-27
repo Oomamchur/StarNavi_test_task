@@ -10,7 +10,8 @@ from user.views import (
     ManageUserView,
     LogoutView,
     UserViewSet,
-    PostViewSet, LikeList,
+    PostViewSet,
+    LikeList,
 )
 
 router = routers.DefaultRouter()

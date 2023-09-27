@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, timedelta
 
 from django.contrib.auth import get_user_model
 from drf_spectacular.utils import OpenApiParameter, extend_schema
@@ -21,7 +21,9 @@ from user.serializers import (
     UserDetailSerializer,
     PostSerializer,
     PostListSerializer,
-    PostDetailSerializer, LikeListSerializer, LikeSerializer,
+    PostDetailSerializer,
+    LikeListSerializer,
+    LikeSerializer,
 )
 
 
@@ -181,17 +183,22 @@ class LikeList(generics.ListAPIView):
     serializer_class = LikeListSerializer
     permission_classes = (IsAuthenticated,)
 
-    # def get_queryset(self):
-    #     queryset = self.queryset.select_related("post", "user")
-    #         date_from = request.query_params.get("date_from")
-    #         date_to = request.query_params.get("date_to")
-    #
-    #         queryset = Like.objects.all()
-    #
-    #         if date_from:
-    #             queryset = queryset.filter()
-    #
-    #     return queryset
+    def get_queryset(self):
+        queryset = self.queryset.select_related("post", "user")
+
+        date_from = self.request.query_params.get("date_from")
+        date_to = self.request.query_params.get("date_to")
+        if date_from:
+            date_from = datetime.strptime(date_from, "%Y-%m-%d").date()
+            queryset = queryset.filter(created_at__gt=date_from)
+
+        if date_to:
+            date_to = datetime.strptime(
+                date_to, "%Y-%m-%d"
+            ).date() + timedelta(days=1)
+            queryset = queryset.filter(created_at__lte=date_to)
+
+        return queryset
 
 
 # def index(request: HttpRequest) -> HttpResponse:
@@ -211,10 +218,19 @@ class LikeList(generics.ListAPIView):
 #     return render(request, "catalog/index.html", context=context)
 
 # def likes_count_by_date(request):
+#     queryset = Like.objects.all()
 #     date_from = request.query_params.get("date_from")
 #     date_to = request.query_params.get("date_to")
 #
-#     queryset = Like.objects.all()
-#
 #     if date_from:
-#         queryset = queryset.filter()
+#         date_from = datetime.strptime(date_from, "%Y-%m-%d").date()
+#         queryset = queryset.filter(created_at__gt=date_from)
+#
+#     if date_to:
+#         date_to = datetime.strptime(
+#             date_to, "%Y-%m-%d"
+#         ).date() + timedelta(days=1)
+#         queryset = queryset.filter(created_at__lte=date_to)
+#
+#     return Response(queryset.count(), status=200)
+
