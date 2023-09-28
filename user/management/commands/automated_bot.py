@@ -4,7 +4,6 @@ import uuid
 
 from django.contrib.auth import get_user_model
 from django.core.management import BaseCommand
-from rest_framework.test import APIClient
 
 from user.models import Post, Like
 
@@ -23,7 +22,6 @@ class Command(BaseCommand):
             num_likes = random.randint(1, MAX_LIKES_PER_USER)
 
             name = str(uuid.uuid4()).split("-")[0]
-            client = APIClient()
 
             user = get_user_model().objects.create_user(
                 username=f"username-{name}",
@@ -32,7 +30,6 @@ class Command(BaseCommand):
                 first_name=f"user-{name}_first_name",
                 last_name=f"user-{name}_last_name",
             )
-            client.force_authenticate(user)
 
             for _ in range(num_posts):
                 Post.objects.create(text="Some text", user=user)
