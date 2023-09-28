@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 
 from django.contrib.auth import get_user_model
+from django.db.models import QuerySet
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import generics, status, viewsets
 from rest_framework.decorators import action, api_view, permission_classes
@@ -76,7 +77,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
         return super().get_permissions()
 
-    def get_queryset(self) -> queryset:
+    def get_queryset(self) -> QuerySet:
         queryset = super().get_queryset()
 
         username = self.request.query_params.get("username")
@@ -145,7 +146,7 @@ class PostViewSet(viewsets.ModelViewSet):
 
         return super().get_permissions()
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet:
         queryset = self.queryset
 
         username = self.request.query_params.get("username")
@@ -175,7 +176,7 @@ class PostViewSet(viewsets.ModelViewSet):
         url_path="like",
         permission_classes=(IsAuthenticated,),
     )
-    def like(self, request, pk=None):
+    def like(self, request, pk=None) -> Response:
         """Endpoint for liking specific post"""
         post = self.get_object()
         user = self.request.user
@@ -190,7 +191,7 @@ class PostViewSet(viewsets.ModelViewSet):
         url_path="dislike",
         permission_classes=(IsAuthenticated,),
     )
-    def dislike(self, request, pk=None):
+    def dislike(self, request, pk=None) -> Response:
         """Endpoint for liking specific post"""
         post = self.get_object()
         user = self.request.user
@@ -206,7 +207,7 @@ class LikeList(generics.ListAPIView):
     permission_classes = (IsAuthenticated,)
     pagination_class = UserPagination
 
-    def get_queryset(self):
+    def get_queryset(self) -> QuerySet:
         queryset = self.queryset.select_related("post", "user")
 
         return queryset

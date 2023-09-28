@@ -17,7 +17,7 @@ MAX_LIKES_PER_USER = config.getint("DEFAULT", "max_likes_per_user")
 
 
 class Command(BaseCommand):
-    def handle(self, *args, **kwargs):
+    def handle(self, *args, **kwargs) -> None:
         for _ in range(NUMBER_OF_USERS):
             num_posts = random.randint(1, MAX_POSTS_PER_USER)
             num_likes = random.randint(1, MAX_LIKES_PER_USER)
