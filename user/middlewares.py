@@ -1,7 +1,4 @@
-from datetime import datetime
-
 from django.utils import timezone
-from user.models import User
 
 
 class UpdateLastActivityMiddleware:

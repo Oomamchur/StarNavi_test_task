@@ -15,6 +15,7 @@ from rest_framework.views import APIView
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from user.models import Post, Like, Dislike
+from user.pagination import UserPagination
 from user.permissions import ReadOnly, IsCreatorOrReadOnly, IsCreatorOrIsAdmin
 from user.serializers import (
     UserSerializer,
@@ -59,6 +60,7 @@ class UserViewSet(viewsets.ModelViewSet):
     queryset = get_user_model().objects.all()
     serializer_class = UserSerializer
     permission_classes = (ReadOnly,)
+    pagination_class = UserPagination
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -118,6 +120,7 @@ class PostViewSet(viewsets.ModelViewSet):
     queryset = Post.objects.all()
     serializer_class = PostSerializer
     permission_classes = (IsAuthenticatedOrReadOnly,)
+    pagination_class = UserPagination
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -201,6 +204,7 @@ class LikeList(generics.ListAPIView):
     queryset = Like.objects.all()
     serializer_class = LikeListSerializer
     permission_classes = (IsAuthenticated,)
+    pagination_class = UserPagination
 
     def get_queryset(self):
         queryset = self.queryset.select_related("post", "user")

@@ -42,4 +42,6 @@ class Command(BaseCommand):
             for liked_post in liked_posts:
                 Like.objects.create(user=user, post=liked_post)
 
-            self.stdout.write(f"User with {num_posts}posts and {num_likes}likes created")
+            self.stdout.write(
+                f"User with {num_posts}posts and {num_likes}likes created"
+            )
