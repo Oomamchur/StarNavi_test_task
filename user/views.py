@@ -213,44 +213,46 @@ class LikeList(generics.ListAPIView):
         return queryset
 
 
-@api_view(["GET"])
-@permission_classes([IsAuthenticated])
-def get_likes_count_by_date(request: Request) -> Response:
-    queryset = Like.objects.all()
-    date_from = request.query_params.get("date_from")
-    date_to = request.query_params.get("date_to")
+class LikeAnalytics(APIView):
+    permission_classes = (IsAuthenticated,)
 
-    from_str = ""
-    if date_from:
-        from_str = f" from {date_from}"
-        date_from = datetime.strptime(date_from, "%Y-%m-%d").date()
-        queryset = queryset.filter(created_at__gt=date_from)
+    def get(self, request: Request) -> Response:
+        queryset = Like.objects.all()
 
-    to_str = ""
-    if date_to:
-        to_str = f" to {date_to}"
-        date_to = datetime.strptime(date_to, "%Y-%m-%d").date() + timedelta(
-            days=1
+        from_str = ""
+        date_from = self.request.query_params.get("date_from")
+        if date_from:
+            from_str = f" from {date_from}"
+            date_from = datetime.strptime(date_from, "%Y-%m-%d").date()
+            queryset = queryset.filter(created_at__gt=date_from)
+
+        to_str = ""
+        date_to = self.request.query_params.get("date_to")
+        if date_to:
+            to_str = f" to {date_to}"
+            date_to = datetime.strptime(
+                date_to, "%Y-%m-%d"
+            ).date() + timedelta(days=1)
+            queryset = queryset.filter(created_at__lte=date_to)
+
+        response_message = (
+            f"Number of likes in period{from_str}{to_str}: {queryset.count()}"
         )
-        queryset = queryset.filter(created_at__lte=date_to)
 
-    response_message = (
-        f"Number of likes in period{from_str}{to_str}: {queryset.count()}"
-    )
-
-    return Response(response_message, status=status.HTTP_200_OK)
+        return Response(response_message, status=status.HTTP_200_OK)
 
 
-@api_view(["GET"])
-@permission_classes([IsAuthenticated])
-def user_activity(request: Request) -> Response:
-    user = request.user
-    last_login = user.last_login
-    last_activity = user.last_activity
+class UserActivity(APIView):
+    permission_classes = (IsAuthenticated,)
 
-    response_dict = {
-        f"{user.username}'s last login": last_login,
-        f"{user.username}'s last request": last_activity,
-    }
+    def get(self, request: Request) -> Response:
+        user = self.request.user
+        last_login = user.last_login
+        last_activity = user.last_activity
 
-    return Response(response_dict, status=status.HTTP_200_OK)
+        response_dict = {
+            f"{user.username}'s last login": last_login,
+            f"{user.username}'s last request": last_activity,
+        }
+
+        return Response(response_dict, status=status.HTTP_200_OK)
